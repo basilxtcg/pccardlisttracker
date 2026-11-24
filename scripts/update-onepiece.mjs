@@ -9,7 +9,7 @@ const OUT = new URL("../data/onepiece.json", import.meta.url);
 const CONFIG = new URL("../data/onepiece-config.json", import.meta.url);
 const UA = "CardBuyList/1.0 (personal price tracker; daily GitHub Action)";
 // Bump this whenever the filter changes, so the next run rebuilds the list even if prices haven't changed.
-const FILTER_VERSION = 2;
+const FILTER_VERSION = 3;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function get(path, asText = false) {
@@ -23,8 +23,11 @@ async function get(path, asText = false) {
 // Parallel / Alternate Art / Manga / full-art printing.
 const CHASE_RARITIES = new Set(["L", "SEC", "SP", "TR", "LEADER", "SECRET RARE", "SECRET", "SPECIAL", "SPECIAL RARE", "SP CARD", "TREASURE RARE", "TREASURE", "PR", "P", "PROMO"]);
 const CHASE_NAME = /\b(parallel|alternate art|alt art|manga|full art|treasure|sp card|special)\b|\(sp\)/i;
-export function isChase(name, rarity) {
+export function isChase(name, rarity, setName = "") {
   if (/^DON!!/i.test(rarity || "") || /\bDON!! Card\b/i.test(name)) return false;
+  // Promo sets keep the card's original rarity (e.g. an Illustration Box card is listed as SR),
+  // so take everything from a promo set.
+  if (/promotion|promo\b/i.test(setName)) return true;
   return CHASE_RARITIES.has((rarity || "").toUpperCase()) || CHASE_NAME.test(name);
 }
 export function matchCharacter(name, characters) {
@@ -61,7 +64,7 @@ export async function run({ today = new Date().toISOString().slice(0, 10) } = {}
       const rarity = ext(p, "Rarity"), number = ext(p, "Number");
       if (!number) continue; // sealed product, not a card
       const who = matchCharacter(p.name, config.characters);
-      if (!who || !isChase(p.name, rarity)) continue;
+      if (!who || !isChase(p.name, rarity, g.name)) continue;
       const id = `${pr.productId}-${pr.subTypeName || "Normal"}`;
       const market = pr.marketPrice ?? null, low = pr.lowPrice ?? null;
       const old = prevById.get(id);
