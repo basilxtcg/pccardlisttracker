@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Card Buy List</title>
+<meta name="theme-color" content="#1b1f3b">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Buy List">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light dark;--bg:light-dark(#f4f5fa,#0f1226);--card:light-dark(#fff,#1a1e3a);--ink:light-dark(#14172e,#eef0ff);--mute:light-dark(#5d6280,#a3a8cc);--line:light-dark(#e3e5ef,#2a2f55);--head:#1b1f3b;--acc:#ffcb05;--good:#13a45a;--fair:#d69a00;--wait:#d6453d;--low:#7b3cff}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,sans-serif;overflow-x:clip}
+header{background:var(--head);color:#fff;padding:calc(18px + env(safe-area-inset-top)) max(4vw,16px) 18px}
+.hrow{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;max-width:1000px;margin:auto}
+h1{margin:0;font-size:clamp(26px,5vw,36px);font-weight:800;line-height:1.05}
+h1 span{color:var(--acc)}
+.game{display:flex;border:1px solid #474d85;border-radius:10px;overflow:hidden}
+.game button{font:inherit;font-weight:600;min-height:44px;padding:0 14px;border:0;background:none;color:#fff;cursor:pointer}
+.game button[aria-pressed=true]{background:var(--acc);color:#1b1f3b}
+#char{display:none}body[data-game=op] #char{display:block}body[data-game=op] #add,body[data-game=op] .chip[data-f=fix]{display:none}
+.stats{display:flex;gap:18px;max-width:1000px;margin:14px auto 0}
+.stats div{font-size:13px;color:#c9cdf0}.stats b{display:block;font-size:24px;color:#fff;line-height:1.1}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;min-height:44px;padding:0 16px;cursor:pointer;background:var(--acc);color:#1b1f3b}
+.btn.ghost{background:transparent;color:#fff;border:1px solid #474d85}
+main{max-width:1000px;margin:auto;padding:16px max(4vw,12px) 60px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.tools input[type=search],select{font:inherit;font-size:16px;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:var(--card);color:var(--ink)}
+.tools input[type=search]{flex:1 1 200px}
+.cur{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.cur button{font:inherit;font-weight:600;min-height:44px;min-width:56px;border:0;background:none;color:var(--ink);cursor:pointer}
+.cur button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.chip{font:inherit;font-size:14px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#status{font-size:13px;color:var(--mute);margin:0 0 10px}
+#banner{background:var(--low);color:#fff;padding:12px 14px;border-radius:12px;margin-bottom:12px}
+#banner button{margin-left:8px;font:inherit;border:0;border-radius:8px;padding:4px 10px;cursor:pointer}
+#list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.row{display:grid;grid-template-columns:28px 64px minmax(0,1fr) 108px;gap:12px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.row.is-low{border-color:var(--low);box-shadow:0 0 0 2px color-mix(in srgb,var(--low) 30%,transparent)}
+.rank{font-weight:800;color:var(--mute);font-size:14px;padding-top:2px;text-align:right}
+.row img,.noimg{width:64px;height:89px;border-radius:5px;object-fit:cover;background:var(--line)}
+.top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.top strong{font-size:17px}
+.tag.low{background:var(--low);color:#fff;font-size:12px;font-weight:700;border-radius:6px;padding:1px 7px}
+.meta{font-size:13px;color:var(--mute)}
+.cond{font:inherit;font-size:12px;border:1px solid var(--line);background:none;color:var(--ink);border-radius:6px;padding:2px 7px;margin-left:4px;cursor:pointer}
+.why{margin:6px 0 0;padding-left:18px;font-size:14px}
+.links{display:flex;gap:6px 14px;flex-wrap:wrap;margin-top:8px;font-size:14px;align-items:center}
+.links a{color:var(--ink);font-weight:600}
+.links button{font:inherit;font-size:13px;background:none;border:0;color:var(--mute);text-decoration:underline;cursor:pointer;padding:4px 0}
+.side{text-align:right}
+.pill{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:50%;font-weight:800;font-size:20px;color:#fff}
+.pill.good{background:var(--good)}.pill.fair{background:var(--fair)}.pill.wait{background:var(--wait)}.pill.none{background:var(--mute)}
+.lbl{font-size:12px;font-weight:600;margin-top:4px}
+.price{font-weight:800;font-size:18px;margin-top:6px;white-space:nowrap}
+.price small{display:block;font-weight:400;font-size:12px;color:var(--mute);white-space:normal}
+.empty{padding:30px;text-align:center;color:var(--mute)}
+details{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+details summary{font-weight:700;cursor:pointer;min-height:32px}
+details label{display:flex;gap:10px;align-items:center;margin:10px 0}
+details input[type=number]{width:90px;font:inherit;font-size:16px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+details p{font-size:14px;color:var(--mute)}
+dialog{border:0;border-radius:16px;padding:0;width:min(640px,94vw);max-height:86vh;background:var(--card);color:var(--ink)}
+dialog::backdrop{background:#0009}
+.dhead{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.dhead h2{font-size:18px;margin:0}
+#sform{display:flex;gap:8px;padding:12px 16px}#sform input{flex:1;font:inherit;font-size:16px;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:var(--bg);color:var(--ink)}
+#results{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;padding:0 16px 16px;overflow:auto;max-height:60vh}
+.hit{font:inherit;font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;color:var(--ink);text-align:left}
+.hit img{width:100%;border-radius:6px;display:block;margin-bottom:6px}.hit small{display:block;color:var(--mute)}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+@media(max-width:600px){.row{grid-template-columns:52px minmax(0,1fr) 84px;gap:10px}.tools .cur{order:-1}.rank{display:none}.row img,.noimg{width:52px;height:72px}.pill{width:44px;height:44px;font-size:17px}.price{font-size:15px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1><span id="title-word">Pokémon</span> Buy List</h1>
+    <div class="game" role="group" aria-label="Card game"><button type="button" data-game="pokemon" aria-pressed="true">Pokémon</button><button type="button" data-game="op" aria-pressed="false">One Piece</button></div>
+    <div style="display:flex;gap:8px"><button class="btn ghost" id="add">Add card</button><button class="btn" id="refresh">Refresh prices</button></div>
+  </div>
+  <div class="stats"><div><b id="stat-n">0</b>tracked</div><div><b id="stat-good">0</b>good buys</div><div><b id="stat-low">0</b>new lows</div></div>
+</header>
+<main>
+  <div id="banner" hidden></div>
+  <div class="tools">
+    <input type="search" id="q" placeholder="Search your list" aria-label="Search your list">
+    <div class="cur" role="group" aria-label="Currency"><button type="button" data-cur="CAD" aria-pressed="true">CAD</button><button type="button" data-cur="USD" aria-pressed="false">USD</button></div>
+    <select id="char" aria-label="Character"><option value="">All characters</option></select>
+    <select id="sort" aria-label="Sort by"><option value="score">Best time to buy</option><option value="price">Price, high to low</option><option value="name">Name</option></select>
+  </div>
+  <div class="tools">
+    <button class="chip" data-f="all" aria-pressed="true">All</button>
+    <button class="chip" data-f="good" aria-pressed="false">Good buys</button>
+    <button class="chip" data-f="low" aria-pressed="false">New lows</button>
+    <button class="chip" data-f="fix" aria-pressed="false">Needs a fix</button>
+  </div>
+  <p id="status">Starting…</p>
+  <ul id="list"></ul>
+
+  <details>
+    <summary>Settings and how the score works</summary>
+    <label><input type="checkbox" id="autorate"> Update the exchange rate automatically each day</label>
+    <label>USD to CAD rate <input type="number" id="cad" step="0.0001" min="0.5" max="3"></label>
+    <p id="rate"></p>
+    <label><button class="btn" id="notif" type="button">Turn on notifications</button></label>
+    <p>Prices come from TCGplayer in US dollars. CAD prices are converted with the daily exchange rate (from the European Central Bank, through Frankfurter), so treat them as estimates. Data comes through the free TCGdex service, with pokemontcg.io as a backup. Prices refresh about once a day. Near mint cards use the TCGplayer market price. Cards marked "Played OK" use the cheapest listing, since condition doesn't matter for those. Tap the condition tag on any card to switch it.</p>
+    <p>The score (0 to 100) mixes three things: how today's price compares with the last 30 days of sales, whether the price is still falling or has levelled off, and where it sits in the price history this app saves each time you open it. A new low gives a big boost. 68 and up is a good time to buy, 45 to 67 is fair, under 45 means wait. It's a rule of thumb, not a guarantee.</p>
+    <p>One Piece: the list holds Leaders, Secret Rares, SP, Treasure Rares, and Parallel / Alternate Art / Manga printings for your chosen characters. Prices are TCGplayer market prices (US dollars), saved once a day by the GitHub job, which also builds the price history the score uses. To change the characters, edit data/onepiece-config.json in your GitHub repo. "Remove" hides a One Piece card from your list.</p>
+    <p>eBay doesn't share sold prices with apps like this, so the "eBay sold" link opens eBay's sold listings for that card for a quick manual check, with graded slabs (PSA, BGS, CGC and so on) filtered out. All prices in the app are for raw, ungraded cards.</p>
+  </details>
+</main>
+
+<dialog id="dlg">
+  <div class="dhead"><h2 id="dlg-title">Add a card</h2><button class="btn ghost" id="close" style="color:inherit">Close</button></div>
+  <form id="sform"><input id="sq" placeholder="Card name, e.g. Umbreon" aria-label="Card name"><button class="btn">Search</button></form>
+  <div id="results"></div>
+</dialog>
+
+<script src="cards.js"></script>
+<script src="score.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

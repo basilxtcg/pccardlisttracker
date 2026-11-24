@@ -1,0 +1,16 @@
+{
+  "note": "Characters the daily job looks for. 'match' is any text that can appear in the TCGplayer card name.",
+  "characters": [
+    { "label": "Nico Robin", "match": ["Nico Robin"] },
+    { "label": "Nami", "match": ["Nami"] },
+    { "label": "Yamato", "match": ["Yamato"] },
+    { "label": "Black Maria", "match": ["Black Maria"] },
+    { "label": "Luffy", "match": ["Luffy"] },
+    { "label": "Zoro", "match": ["Zoro"] },
+    { "label": "Sanji", "match": ["Sanji"] },
+    { "label": "Shanks", "match": ["Shanks"] },
+    { "label": "Boa Hancock", "match": ["Boa Hancock", "Hancock"] },
+    { "label": "Doflamingo", "match": ["Doflamingo"] },
+    { "label": "Gerd", "match": ["Gerd"] }
+  ]
+}
