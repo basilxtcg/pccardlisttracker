@@ -8,6 +8,8 @@ const BASE = "https://tcgcsv.com/tcgplayer";
 const OUT = new URL("../data/onepiece.json", import.meta.url);
 const CONFIG = new URL("../data/onepiece-config.json", import.meta.url);
 const UA = "CardBuyList/1.0 (personal price tracker; daily GitHub Action)";
+// Bump this whenever the filter changes, so the next run rebuilds the list even if prices haven't changed.
+const FILTER_VERSION = 2;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function get(path, asText = false) {
@@ -17,9 +19,9 @@ async function get(path, asText = false) {
   return asText ? r.text() : r.json();
 }
 
-// Chase cards only: Leaders, Secret Rares, SP, Treasure Rares, and any
+// Chase cards only: Leaders, Secret Rares, SP, Treasure Rares, promos, and any
 // Parallel / Alternate Art / Manga / full-art printing.
-const CHASE_RARITIES = new Set(["L", "SEC", "SP", "TR", "LEADER", "SECRET RARE", "SECRET", "SPECIAL", "SPECIAL RARE", "SP CARD", "TREASURE RARE", "TREASURE"]);
+const CHASE_RARITIES = new Set(["L", "SEC", "SP", "TR", "LEADER", "SECRET RARE", "SECRET", "SPECIAL", "SPECIAL RARE", "SP CARD", "TREASURE RARE", "TREASURE", "PR", "P", "PROMO"]);
 const CHASE_NAME = /\b(parallel|alternate art|alt art|manga|full art|treasure|sp card|special)\b|\(sp\)/i;
 export function isChase(name, rarity) {
   if (/^DON!!/i.test(rarity || "") || /\bDON!! Card\b/i.test(name)) return false;
@@ -38,7 +40,7 @@ export async function run({ today = new Date().toISOString().slice(0, 10) } = {}
   const prevById = new Map(prev.cards.map(c => [c.id, c]));
 
   const lastUpdated = (await get("https://tcgcsv.com/last-updated.txt", true)).trim();
-  if (prev.source === lastUpdated) { console.log("TCGCSV hasn't changed since last run. Nothing to do."); return false; }
+  if (prev.source === lastUpdated && prev.filterVersion === FILTER_VERSION) { console.log("TCGCSV hasn't changed since last run. Nothing to do."); return false; }
 
   const cats = (await get("/categories")).results;
   const cat = cats.find(c => /^one piece card game$/i.test(c.name)) || cats.find(c => /one piece/i.test(c.name) && !/japan/i.test(c.name));
@@ -74,7 +76,7 @@ export async function run({ today = new Date().toISOString().slice(0, 10) } = {}
   }
   cards.sort((a, b) => a.character.localeCompare(b.character) || a.number.localeCompare(b.number));
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
-  await writeFile(OUT, JSON.stringify({ updated: new Date().toISOString(), source: lastUpdated, day: today, count: cards.length, cards }));
+  await writeFile(OUT, JSON.stringify({ updated: new Date().toISOString(), source: lastUpdated, filterVersion: FILTER_VERSION, day: today, count: cards.length, cards }));
   console.log(`Saved ${cards.length} One Piece cards from ${groups.length} sets.`);
   return true;
 }
